@@ -64,6 +64,7 @@ class Parser(object):
     def train_one(self, itn, words, gold_tags, gold_heads):
         n = len(words)
         i = 2
+        x = 0; y = 0
         stack = [1]
         parse = Parse(n)
         tags = [self.tagger.tag(word)[0][1] for word in words]
@@ -76,16 +77,18 @@ class Parser(object):
             i = transition(output, i, stack, parse)
 
             gold_moves = get_gold_moves(i, n, stack, parse.heads, gold_heads)
+            y += 1
             try:
                 assert gold_moves
             except:
-                gold_moves = valid_moves
+                x += 1
+                continue
             target = max(gold_moves, key=lambda move: scores[move])
 
             self.model.update(target, output, features)
             self.confusion_matrix[target][output] += 1
 
-        return len([i for i in range(n - 1) if parse.heads[i] == gold_heads[i]])
+        return (x, y, len([i for i in range(n - 1) if parse.heads[i] == gold_heads[i]]))
 
 def transition(move, i, stack, parse):
     if move == SHIFT:
