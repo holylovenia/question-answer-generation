@@ -1,17 +1,16 @@
 from nltk.cluster.util import cosine_distance
-from operator import itemgetter
+from .base import get_ranked_indices
 from .page_rank import PageRank
 
 import numpy as np
 
 
 class TextRank:
-  def __init__(self, pagerank=None, top=2, stopwords=None):
+  def __init__(self, pagerank=None, stopwords=None):
     if pagerank is None:
       self.pagerank = PageRank()
     else:
       self.pagerank = pagerank
-    self.top = top
     if stopwords is None:
       self.stopwords = []
     else:
@@ -64,23 +63,23 @@ class TextRank:
             
     # row-wise matrix normalization to penalize longer sentences
     for i in range(len(similarity_matrix)):
-      similarity_matrix[i] /= similarity_matrix[i].sum()
+      similarity_matrix[i] = similarity_matrix[i] / similarity_matrix[i].sum()
 
     return similarity_matrix
 
-  def rank_text(self, sentences):
+  def summarize(self, sentences, top=2):
     """
     sentences = a list of sentences [[w11, w12, ...], [w21, w22, ...], ...]
     top = how may sentences the summary should contain
     stopwords = a list of stopwords
     """
-    
+    self.top=top
+
     similarity_matrix = self.sentence_similarity_matrix(sentences)
     
     sentence_ranks = self.pagerank.page_rank(similarity_matrix)
     
     # sort sentence ranks
-    ranked_sentence_indices = [item[0] for item in sorted(enumerate(sentence_ranks), key=lambda item: -item[1])]
-    selected_sentences = ranked_sentence_indices[:self.top]
+    self.important_sentences = get_ranked_indices(sentence_ranks, self.top)
     
-    return selected_sentences
+    return self.important_sentences

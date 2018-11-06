@@ -1,5 +1,6 @@
 from nltk.tag.stanford import StanfordPOSTagger
 from operator import itemgetter
+from .base import find_all, flatten_nested_arrays, get_ranked_indices
 from .page_rank import PageRank
 from .stanford_postagger.stanford_wrapper import StanfordPOSTagger as StanfordPOSTaggerWrapper
 
@@ -7,13 +8,13 @@ import numpy as np
 
 
 class MultiWordPhraseExtractor:
-  def __init__(self, pagerank=None, window_size=3, top=5, stopwords=None):
+  def __init__(self, pagerank=None, window_size=3, top_keywords=5, stopwords=None):
     if pagerank is None:
       self.pagerank = PageRank()
     else:
       self.pagerank = pagerank
     self.window_size = window_size
-    self.top = top
+    self.top_keywords = top_keywords
     if stopwords is None:
       self.stopwords = []
     else:
@@ -45,16 +46,9 @@ class MultiWordPhraseExtractor:
     
     return filtered_words
 
-  def flatten_nested_arrays(self, nested_arrays):
-    return [item for sublist in nested_arrays for item in sublist]
-
-  def find_all(self, element, array):
-    indices = [i for i, x in enumerate(array) if x == element]
-    return indices
-
   def do_they_occur_together(self, word1, word2, flattened_sentences):
-    indices1 = self.find_all(word1, flattened_sentences)
-    indices2 = self.find_all(word2, flattened_sentences)
+    indices1 = find_all(word1, flattened_sentences)
+    indices2 = find_all(word2, flattened_sentences)
     
     found = False
     for idx1, idx2 in zip(indices1, indices2):
@@ -101,7 +95,7 @@ class MultiWordPhraseExtractor:
     postagged_sentences = self.add_postags(sentences)
     
     # flatten & filter words
-    flattened_sentences = self.flatten_nested_arrays(postagged_sentences)
+    flattened_sentences = flatten_nested_arrays(postagged_sentences)
     all_words = list(set(flattened_sentences))
     filtered_words = self.filter_words(all_words)
     
@@ -112,15 +106,15 @@ class MultiWordPhraseExtractor:
     keyword_ranks = self.pagerank.page_rank(cooccurrence_matrix)
     
     # sort keyword ranks
-    ranked_keyword_indices = [item[0] for item in sorted(enumerate(keyword_ranks), key=lambda item: -item[1])]
-    selected_keywords = ranked_keyword_indices[:self.top]
+    selected_keywords = get_ranked_indices(keyword_ranks, self.top_keywords)
     
     self.keywords = itemgetter(*selected_keywords)(filtered_words)
     self.phrases = self.pair_keywords(self.keywords, filtered_words, cooccurrence_matrix)
 
     return self.phrases
 
-  def get_important_sentences(self, sentences, min_occurrence=2):
+  def summarize(self, sentences, top=2):
+    self.top = top
     self.multi_word_phrase_extraction(sentences)
 
     all_single_words = []
@@ -128,7 +122,7 @@ class MultiWordPhraseExtractor:
       splitted_phrase = self.phrases[i].split()
       all_single_words.append(splitted_phrase)
     
-    all_single_words = self.flatten_nested_arrays(all_single_words)
+    all_single_words = flatten_nested_arrays(all_single_words)
     all_single_words = list(set(all_single_words))
     
     sentence_scores = np.zeros((len(sentences), 1))
@@ -136,7 +130,7 @@ class MultiWordPhraseExtractor:
       for j in range(len(all_single_words)):
         if all_single_words[j] in sentences[i]:
           sentence_scores[i] = sentence_scores[i] + 1
+
+    self.important_sentences = get_ranked_indices(sentence_scores, self.top)
     
-    important_sentence_indices = [i for i, v in enumerate(sentence_scores) if v >= min_occurrence]
-    
-    return important_sentence_indices
+    return self.important_sentences
