@@ -1,12 +1,12 @@
 from nltk.cluster.util import cosine_distance
-from .base import get_ranked_indices
+from .base import get_ranked_indices, jaccard_similarity
 from .page_rank import PageRank
 
 import numpy as np
 
 
 class TextRank:
-  def __init__(self, pagerank=None, stopwords=None):
+  def __init__(self, pagerank=None, stopwords=None, similarity='cosine'):
     if pagerank is None:
       self.pagerank = PageRank()
     else:
@@ -15,6 +15,8 @@ class TextRank:
       self.stopwords = []
     else:
       self.stopwords = stopwords
+
+    self.similarity = similarity
 
   def sentence_similarity(self, sentence1, sentence2):
     """
@@ -44,7 +46,10 @@ class TextRank:
       # add 1 to vector's index corresponding to word
       vector2[all_words.index(word)] += 1
             
-    return 1 - cosine_distance(vector1, vector2)
+    if self.similarity == 'cosine':
+      return 1 - cosine_distance(vector1, vector2)
+    else:
+      return jaccard_similarity(vector1, vector2)
 
   def sentence_similarity_matrix(self, sentences):
     """
