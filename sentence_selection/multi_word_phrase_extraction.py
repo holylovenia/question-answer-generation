@@ -1,6 +1,6 @@
 from nltk.tag.stanford import StanfordPOSTagger
 from operator import itemgetter
-from .base import find_all, flatten_nested_arrays, get_ranked_indices
+from .base import find_all, flatten_nested_arrays, get_ranked_indices, lower_sentences
 from .page_rank import PageRank
 from .stanford_postagger.stanford_wrapper import StanfordPOSTagger as StanfordPOSTaggerWrapper
 
