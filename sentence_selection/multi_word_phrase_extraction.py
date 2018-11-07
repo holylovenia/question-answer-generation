@@ -27,7 +27,7 @@ class MultiWordPhraseExtractor:
     for sentence in paragraph:
       postagged_sentence = []
       for word in sentence:
-        if word in self.stopwords:
+        if word.lower() in self.stopwords:
             continue # skip
         
         postagged_word = postagger.tag(word)

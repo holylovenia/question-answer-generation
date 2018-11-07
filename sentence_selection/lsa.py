@@ -5,11 +5,13 @@ import numpy as np
 
 
 class SteinbergerJezekLSA():
-  def __init__(self, stopwords=None):
+  def __init__(self, stopwords=None, matrix_technique='tfidf'):
     if stopwords is None:
       self.stopwords = []
     else:
       self.stopwords = stopwords
+
+    self.matrix_technique = matrix_technique
 
   def get_terms_from_sentences(self, sentences, stopwords=None):
     if stopwords is None:
@@ -30,7 +32,6 @@ class SteinbergerJezekLSA():
             if i not in terms[word.lower()]:
               terms[word.lower()].append(i)
     
-    # print(terms)
     return terms
 
   def build_term_frequency_matrix(self, terms, sentences):
@@ -58,6 +59,17 @@ class SteinbergerJezekLSA():
             
     return tfidf
 
+  def binary_transform(self, term_freq_matrix):
+    binary_matrix = term_freq_matrix.copy()
+    total_sentences = binary_matrix.shape[1]
+    
+    for row in range(len(binary_matrix)):
+      for col in range(len(binary_matrix[row])):
+        if binary_matrix[row][col] > 0:
+          binary_matrix[row][col] = 1
+            
+    return binary_matrix
+
   def compute_ranks(self):
     min_dimensions = 3
     dimensions = max(min_dimensions, len(self.sigma))
@@ -76,10 +88,12 @@ class SteinbergerJezekLSA():
 
     terms = self.get_terms_from_sentences(lowered_sentences)
     term_freq = self.build_term_frequency_matrix(terms, lowered_sentences)
-    self.tfidf = self.tfidf_transform(term_freq, lowered_sentences)
-    # print(self.tfidf)
+    if self.matrix_technique == 'tfidf':
+      self.matrix = self.tfidf_transform(term_freq, lowered_sentences)
+    else:
+      self.matrix = self.binary_transform(term_freq)
 
-    self.u, self.sigma, self.vt = np.linalg.svd(self.tfidf)
+    self.u, self.sigma, self.vt = np.linalg.svd(self.matrix)
     
     self.important_sentences = get_ranked_indices(self.compute_ranks(), self.top)
     
