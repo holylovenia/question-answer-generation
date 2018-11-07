@@ -13,13 +13,11 @@ class SteinbergerJezekLSA():
 
     self.matrix_technique = matrix_technique
 
-  def get_terms_from_sentences(self, sentences, stopwords=None):
-    if stopwords is None:
-      stopwords = []
+  def get_terms_from_sentences(self, sentences):
     
     all_words = list(set(flatten_nested_arrays(sentences, lower=True)))
     for word in all_words:
-      if word in stopwords:
+      if word in self.stopwords:
         all_words.remove(word)
     
     terms = {}

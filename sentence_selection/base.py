@@ -12,6 +12,11 @@ def get_ranked_indices(scores, top):
   ranked_indices = [item[0] for item in sorted(enumerate(scores), key=lambda item: -item[1])]
   return ranked_indices[:top]
 
+def jaccard_similarity(sentence1, sentence2):
+  intersection = len(list(set(sentence1).intersection(sentence2)))
+  union = (len(sentence1) + len(sentence2)) - intersection
+  return float(intersection / union)
+
 def lower_sentences(sentences):
   lowered_sentences = sentences.copy()
 
