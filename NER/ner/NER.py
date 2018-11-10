@@ -12,6 +12,8 @@ import scipy
 from sklearn.grid_search import RandomizedSearchCV
 
 import pickle
+import datefinder
+from datefinder import DateFinder
 
 class NER:
 
@@ -125,6 +127,28 @@ class NER:
     postagged_data = self.add_postag2dataset(other_label_dataset)
     features = [self.sent2features(sent) for sent in postagged_data]
     predicted = self.loaded_model.predict(features)
+
+    datefinder_object = DateFinder()
+    results = datefinder_object.extract_date_strings(text)
+    temp_result = []
+    for result in results:
+        temp_result.append(result)
+    entity_time_dict = {}
+    for idx_word, word in enumerate(sentence):
+        for result in temp_result:
+            splitter = result[0].split()
+            found_B = False
+            for idx_word_time, word_time in enumerate(splitter):
+                if idx_word + idx_word_time < len(sentence) and sentence[idx_word + idx_word_time].find(word_time) == 0:
+                    if len(word_time) > 1:
+                        if found_B:
+                            entity_time_dict[idx_word + idx_word_time] = 'I-TIME'
+                        else:
+                            entity_time_dict[idx_word + idx_word_time] = 'B-TIME'
+                            found_B = True
+    for key in entity_time_dict:
+        if predicted[0][key] == 'O':
+            predicted[0][key] = entity_time_dict[key]
     return predicted
 
   def predict_class_text_list(self, sentence_list):
@@ -135,12 +159,38 @@ class NER:
     postagged_data = self.add_postag2dataset(other_label_dataset)
     features = [self.sent2features(sent) for sent in postagged_data]
     predicted = self.loaded_model.predict(features)
+    for idx_sentence, sentence in enumerate(sentence_list):
+        text = " ".join(sentence)
+        datefinder_object = DateFinder()
+        results = datefinder_object.extract_date_strings(text)
+        temp_result = []
+        for result in results:
+            temp_result.append(result)
+        entity_time_dict = {}
+        for idx_word, word in enumerate(sentence):
+            for result in temp_result:
+                splitter = result[0].split()
+                found_B = False
+                for idx_word_time, word_time in enumerate(splitter):
+                    if idx_word + idx_word_time < len(sentence) and sentence[idx_word + idx_word_time].find(word_time) == 0:
+                        if len(word_time) > 1:
+                            if found_B:
+                                entity_time_dict[idx_word + idx_word_time] = 'I-TIME'
+                            else:
+                                entity_time_dict[idx_word + idx_word_time] = 'B-TIME'
+                                found_B = True
+        for key in entity_time_dict:
+            if predicted[idx_sentence][key] == 'O':
+                predicted[idx_sentence][key] = entity_time_dict[key]
+                
+
     return predicted
 
   def predict_marginal_class_text(self, text):
     """
     Input 1 sentence with space as the separator between words 
     e.g: John Doe is the most handsome person in the world
+    This function not support time
     """
     sentence = text.split()
     other_label_dataset = self.add_other_label2dataset([sentence])
