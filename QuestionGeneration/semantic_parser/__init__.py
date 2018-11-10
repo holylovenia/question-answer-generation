@@ -1,0 +1,1 @@
+from .senna import SemanticRoleLabeler
