@@ -4,28 +4,31 @@ class BoyerMoore:
     def __init__(self):
         pass
 
-    @staticmethod
-    def compute_last_occ(pattern):
-        l = len(pattern)
-        last_occ = defaultdict(lambda: l)
+    class LastOccurence:
+        def __init__(self, pattern):
+            self.occurrences = defaultdict(lambda: -1)
+            for i, v in enumerate(pattern):
+                self.occurrences[v] = len(pattern) - i - 1
 
-        for i, v in enumerate(pattern):
-            last_occ[v] = l - i - 1
-
-        return last_occ
+        def __call__(self, letter):
+            return self.occurrences[letter]
 
     @staticmethod
     def find(text, pattern):
-        last_occ = BoyerMoore.compute_last_occ(pattern)
-        skip = 0
-
-        while len(text) - skip >= len(pattern):
-            i = len(pattern) - 1
-            while text[skip + i] == pattern[i]:
-                if i == 0:
-                    return skip
-                i -= 1
-            
-            skip += last_occ[text[skip + len(pattern) - 1]]
-
+        last = BoyerMoore.LastOccurence(pattern)
+        m = len(pattern)
+        n = len(text)
+        i = m - 1  # text index
+        j = m - 1  # pattern index
+        while i < n:
+            if text[i] == pattern[j]:
+                if j == 0:
+                    return i
+                else:
+                    i -= 1
+                    j -= 1
+            else:
+                l = last(text[i])
+                i = i + m - min(j, 1+l)
+                j = m - 1 
         return -1

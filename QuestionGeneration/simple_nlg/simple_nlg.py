@@ -47,17 +47,17 @@ class SimpleNLG:
         self.question = candidate['question']
 
     def convert_to_question(self):
-        if self.entity.parent().label() == 'S':
-            print("SS")
-            return self.convert_subject()
-        elif self.entity.parent().parent().label() == 'S':
-            print("OO")
-            return self.convert_object()
-        elif self.entity.parent().label() == 'PP':
-            print("PP")
-            return self.convert_pp()
-        else:
-            return self.question
+        try:
+            if self.entity.parent().label() == 'S':
+                return self.convert_subject()
+            elif self.entity.parent().parent().label() == 'S':
+                return self.convert_object()
+            elif self.entity.parent().label() == 'PP':
+                return self.convert_pp()
+            else:
+                return ''
+        except Exception:
+            return ''
 
     def convert_subject(self):
         if 'PER' in self.named_entities_dict and self.answer in self.named_entities_dict['PER']:
