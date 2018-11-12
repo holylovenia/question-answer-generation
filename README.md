@@ -8,6 +8,10 @@
 
 3. [Felix Limanta](https://github.com/felixlimanta)
 
+## English Paper
+
+We have a paper (not submitted) that explains our question-answer generation system [here](docs/qag-paper-not-submitted.pdf).
+
 ## Architecture in overview
 
 We propose an approach which is generally based on the framework of an ongoing work by [A. Sarvaiya](https://software.intel.com/en-us/articles/using-natural-language-processing-for-smart-question-generation). Formally, given a passage <img src="https://latex.codecogs.com/gif.latex?P" />, question-answer generation (**QAG**) system retrieves the most important sentence <img src="https://latex.codecogs.com/gif.latex?S" /> from <img src="https://latex.codecogs.com/gif.latex?P" />. Then, **QAG** system produces a set of question-answer pairs <img src="https://latex.codecogs.com/gif.latex?\{(Q_j,&space;A_j)\}" />, where each generated <img src="https://latex.codecogs.com/gif.latex?A_j"/> can be found in <img src="https://latex.codecogs.com/gif.latex?S"/>, and its pair <img src="https://latex.codecogs.com/gif.latex?Q_j"/> is the interrogative version of <img src="https://latex.codecogs.com/gif.latex?S"/> or a clause <img src="https://latex.codecogs.com/gif.latex?C_k"/> from a set of clauses <img src="https://latex.codecogs.com/gif.latex?\{C_k\}"/> in <img src="https://latex.codecogs.com/gif.latex?S"/>, without <img src="https://latex.codecogs.com/gif.latex?A_j"/> in it. As shown in the figure below, here are four main modules  in our **QAG** system.
