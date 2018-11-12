@@ -59,7 +59,7 @@ class MultiWordPhraseExtractor:
     return found
 
   def get_cooccurrence_matrix(self, all_words, flattened_sentences):
-    cooccurrence_matrix = np.zeros((len(flattened_sentences), len(flattened_sentences)))
+    cooccurrence_matrix = np.zeros((len(all_words), len(all_words)))
     
     for i in range(len(all_words)):
       for j in range(len(all_words)):
