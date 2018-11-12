@@ -26,6 +26,6 @@ We propose an approach which is generally based on the framework of an ongoing w
 
 1. Demonstration with [Jupyter Notebook](https://github.com/holylovenia/question-answer-generation/blob/master/QuestionGeneration/QG_Final.ipynb)
 
-2. Source code for the web version is in [this GitHub repository](https://agusgun/qag-web). Check it out!
+2. Source code for the web version is in [this GitHub repository](https://github.com/agusgun/qag-web). Check it out!
 
 ![result](assets/qag-web.gif)
