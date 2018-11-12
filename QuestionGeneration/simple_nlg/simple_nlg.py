@@ -152,6 +152,8 @@ class SimpleNLG:
             question = question.replace('Where', 'Who')
         elif check_in_dict(self.answer, self.named_entities_dict, 'LOC'):
             pass
+        elif check_in_dict(self.answer, self.named_entities_dict, 'TIME'):
+            question = question.replace('Where', 'When')
         else:
             question = question.replace('Where', 'What')
         return question
