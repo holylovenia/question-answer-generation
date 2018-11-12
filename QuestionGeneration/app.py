@@ -28,7 +28,7 @@ class QuestionGenerator:
         for candidate in candidates:
             if not candidate["question"]:
                 continue
-
+            
             nlg = SimpleNLG(s, candidate)
             question = nlg.convert_to_question()
 

@@ -103,19 +103,19 @@ class GapSelector:
 
             bi, li = (0, 0)
             for _ in range(first_word_occurence + 1):
-                bi = s[(bi + 1):].find(first_word) + bi + len(first_word)
+                bi = s.find(first_word, bi) + len(first_word)
             for _ in range(last_word_occurence + 1):
-                li = s[(li + 1):].find(last_word) + li + len(last_word)
-            bi += 1 - len(first_word)
-            li += 1
+                li = s.find(last_word, li) + len(last_word)
+            bi -= len(first_word)
 
             s = s[bi:li]
 
             # candidate_gap = re.sub(r".*?([\w'–]+)(?:\)+)", r"\1 ", str(entity)).strip()
             # candidate_gap = re.sub(r" '", "'", candidate_gap)
-            candidate_gap = ' '.join(entity.leaves())
+            candidate_gap = ' '.join(entity.leaves()).replace(" '", "'")
 
-            gapped_sentence = s.replace(candidate_gap, '_____')
+            gap = re.compile("\b{}\b".format(candidate_gap), re.I)
+            gapped_sentence = re.sub("\\b{}\\b".format(candidate_gap), '_____', s)
             
             if candidate_gap != s.strip():
                 self.candidates.append({
