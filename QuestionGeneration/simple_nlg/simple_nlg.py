@@ -1,3 +1,5 @@
+import re
+
 from nltk.stem import WordNetLemmatizer
 from py4j.java_gateway import JavaGateway, java_import
 
@@ -19,6 +21,17 @@ def init_simple_nlg():
         java_import(gateway.jvm, i)
     return gateway
 
+def check_in_dict(answer, ne_dict, key):
+    if key not in ne_dict:
+        return False
+    if answer in ne_dict[key]:
+        return True
+    
+    for word in answer.split(' '):
+        if word in ne_dict[key]:
+            return True
+    return False
+
 class SimpleNLG:
     gateway = init_simple_nlg()
     lexicon = gateway.jvm.Lexicon.getDefaultLexicon()
@@ -35,14 +48,19 @@ class SimpleNLG:
 
     def convert_to_question(self):
         if self.entity.parent().label() == 'S':
+            print("SS")
             return self.convert_subject()
         elif self.entity.parent().parent().label() == 'S':
+            print("OO")
             return self.convert_object()
         elif self.entity.parent().label() == 'PP':
-            return 
+            print("PP")
+            return self.convert_pp()
+        else:
+            return self.question
 
     def convert_subject(self):
-        if self.answer in self.named_entities_dict['PER']:
+        if 'PER' in self.named_entities_dict and self.answer in self.named_entities_dict['PER']:
             question = self.question.replace(blank, "who")
         else:
             question = self.question.replace(blank, "what")
@@ -65,19 +83,27 @@ class SimpleNLG:
             
             # Verb
             elif child.label() == 'VP':
+                verb = SimpleNLG.nlg_factory.createVerbPhrase("be")
                 for gchild in child:
+                    l = gchild.leaves()[0]
                     if gchild.label() in ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']:
-                        p.setVerb(self.lemmatize_verb(gchild))
+                        verb.setVerb(self.wnl.lemmatize(l, pos='v'))
                         if gchild.label() in ['VB', 'VBG', 'VBP', 'VBZ']:
-                            p.setFeature(self.gateway.jvm.Feature.TENSE, self.gateway.jvm.Tense.PRESENT)
+                            verb.setFeature(self.gateway.jvm.Feature.TENSE, self.gateway.jvm.Tense.PRESENT)
                         elif gchild.label() in ['VBD', 'VBN']:
-                            p.setFeature(self.gateway.jvm.Feature.TENSE, self.gateway.jvm.Tense.PAST)
-                        break
-                        
+                            verb.setFeature(self.gateway.jvm.Feature.TENSE, self.gateway.jvm.Tense.PAST)
+                    elif gchild.label() == 'NP':
+                        verb.setObject(' '.join(gchild.leaves()))
+                    elif gchild.label() == 'RB':
+                        if l in ['n\'t', 'not']:
+                            verb.setFeature(self.gateway.jvm.Feature.NEGATED, True)
+                    elif gchild.label() == 'PP':
+                        verb.addComplement(' '.join(gchild.leaves()))
+                p.setVerbPhrase(verb)
             elif child.label() == 'PP':
                 p.addComplement(' '.join(child.leaves()))
                         
-        if self.answer in self.named_entities_dict['PER']:
+        if 'PER' in self.named_entities_dict and self.answer in self.named_entities_dict['PER']:
             p.setFeature(self.gateway.jvm.Feature.INTERROGATIVE_TYPE, self.gateway.jvm.InterrogativeType.WHO_OBJECT)
         else:
             p.setFeature(self.gateway.jvm.Feature.INTERROGATIVE_TYPE, self.gateway.jvm.InterrogativeType.WHAT_OBJECT)
@@ -85,7 +111,8 @@ class SimpleNLG:
         return self.realiser.realiseSentence(p)
 
     def convert_pp(self):
-        p = SimpleNLG.nlg_factory.createClause()
+        p = self.nlg_factory.createClause()
+        
         for child in self.parent:
             # Subject
             if child.label() == 'NP':
@@ -93,28 +120,43 @@ class SimpleNLG:
             
             # Verb
             elif child.label() == 'VP':
+                verb = SimpleNLG.nlg_factory.createVerbPhrase("be")
                 for gchild in child:
+                    l = gchild.leaves()[0]
                     if gchild.label() in ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']:
-                        p.setVerb(self.lemmatize_verb(gchild))
+                        verb.setVerb(self.wnl.lemmatize(l, pos='v'))
                         if gchild.label() in ['VB', 'VBG', 'VBP', 'VBZ']:
-                            p.setFeature(self.gateway.jvm.Feature.TENSE, self.gateway.jvm.Tense.PRESENT)
+                            verb.setFeature(self.gateway.jvm.Feature.TENSE, self.gateway.jvm.Tense.PRESENT)
                         elif gchild.label() in ['VBD', 'VBN']:
-                            p.setFeature(self.gateway.jvm.Feature.TENSE, self.gateway.jvm.Tense.PAST)
-                        break
-                        
+                            verb.setFeature(self.gateway.jvm.Feature.TENSE, self.gateway.jvm.Tense.PAST)
+                    elif gchild.label() == 'NP':
+                        verb.setObject(' '.join(gchild.leaves()))
+                    elif gchild.label() == 'RB':
+                        if l in ['n\'t', 'not']:
+                            verb.setFeature(self.gateway.jvm.Feature.NEGATED, True)
+                    elif gchild.label() == 'PP':
+                        verb.addComplement(' '.join(gchild.leaves()))
+                p.setVerbPhrase(verb)
             elif child.label() == 'PP':
                 p.addComplement(' '.join(child.leaves()))
-                        
-        if self.answer in self.named_entities_dict['PER']:
-            p.setFeature(self.gateway.jvm.Feature.INTERROGATIVE_TYPE, self.gateway.jvm.InterrogativeType.WHO_OBJECT)
-        else:
-            p.setFeature(self.gateway.jvm.Feature.INTERROGATIVE_TYPE, self.gateway.jvm.InterrogativeType.WHAT_OBJECT)
-            
-        return self.realiser.realiseSentence(p)
-
-    def parse_pp(self, subtree):
+                
+        p.setFeature(self.gateway.jvm.Feature.INTERROGATIVE_TYPE, self.gateway.jvm.InterrogativeType.WHERE)
+        question = self.realiser.realiseSentence(p)\
+            .replace(self.answer, '')\
+            .replace('  ', ' ')\
+            .replace('to?', '?')\
+            .replace(' ?', '?')
+        question = re.sub(r"-LRB- (.*) -RRB-", r"(\1)", question)
         
+        if check_in_dict(self.answer, self.named_entities_dict, 'PER'):
+            question = question.replace('Where', 'Who')
+        elif check_in_dict(self.answer, self.named_entities_dict, 'LOC'):
+            pass
+        else:
+            question = question.replace('Where', 'What')
+        return question
 
     @classmethod
     def lemmatize_verb(cls, verb):
         return SimpleNLG.wnl.lemmatize(verb.leaves()[0], pos='v')
+
