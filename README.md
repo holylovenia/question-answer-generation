@@ -10,7 +10,7 @@
 
 ## English Paper
 
-We have a paper (not submitted) that explains our question-answer generation system [here](docs/qag-paper-not-submitted.pdf).
+We have a technical report that explains our question-answer generation system [here](https://www.researchgate.net/publication/328916588_Automatic_Question-Answer_Pairs_Generation_from_Text).
 
 ## Architecture in overview
 
