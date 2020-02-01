@@ -36,5 +36,6 @@ We propose an approach which is generally based on the framework of an ongoing w
 
 1. Export '$STANFORD_PARSER' environment variable using lib path using command `EXPORT STANFORD_PARSER=<ABSOLUTE_PATH>` e.g. `EXPORT STANFORD_PARSER=/home/anonymous/question-answer-generation/QuestionGeneration/lib`
 2. If you want the website version please see the link above
- 
+3. If the program stuck after loading the model. It's because the port already used. This happened usually after you already run the program twice or several times. Please kill the process that runs on the port using `lsof -i` find java, kill the proces PID.
+
 ![result](assets/qag-web.gif)
