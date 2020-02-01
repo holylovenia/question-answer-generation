@@ -32,4 +32,9 @@ We propose an approach which is generally based on the framework of an ongoing w
 
 2. Source code for the web version is in [this GitHub repository](https://github.com/agusgun/qag-web). Check it out!
 
+## Installation
+
+1. Export '$STANFORD_PARSER' environment variable using lib path using command `EXPORT STANFORD_PARSER=<ABSOLUTE_PATH>` e.g. `EXPORT STANFORD_PARSER=/home/anonymous/question-answer-generation/QuestionGeneration/lib`
+2. If you want the website version please see the link above
+ 
 ![result](assets/qag-web.gif)

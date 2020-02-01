@@ -1,0 +1,15 @@
+Click==7.0
+colorama==0.4.3
+joblib==0.14.1
+nltk==3.4.5
+numpy==1.18.1
+pntl==0.2.4
+py4j==0.10.9
+python-crfsuite==0.9.6
+scikit-learn==0.22.1
+scipy==1.4.1
+six==1.14.0
+sklearn==0.0
+sklearn-crfsuite==0.3.6
+tabulate==0.8.6
+tqdm==4.42.0

@@ -12,12 +12,7 @@ classpath_separator = {
 class StanfordParser():
     def __init__(self, stanford_parser_path):
         sep = classpath_separator[system()]
-
-        if 'CLASSPATH' not in os.environ:
-            os.environ['CLASSPATH'] = ".{}".format(sep)
-        os.environ['CLASSPATH'] += "{}{}".format(stanford_parser_path, sep)
-        
-        self.parser = stanford.StanfordParser(model_path="{}/englishPCFG.ser.gz".format(stanford_parser_path))
+        self.parser = stanford.StanfordParser(path_to_models_jar="{}/englishPCFG.ser.gz".format(stanford_parser_path))
 
     def parse(self, sentence):
         return self.parser.raw_parse((sentence))
