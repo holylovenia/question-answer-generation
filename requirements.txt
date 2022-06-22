@@ -2,7 +2,7 @@ Click==7.0
 colorama==0.4.3
 joblib==0.14.1
 nltk==3.4.5
-numpy==1.18.1
+numpy==1.22.0
 pntl==0.2.4
 py4j==0.10.9
 python-crfsuite==0.9.6
