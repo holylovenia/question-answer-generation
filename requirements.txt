@@ -1,6 +1,6 @@
 Click==7.0
 colorama==0.4.3
-joblib==0.14.1
+joblib==1.2.0
 nltk==3.4.5
 numpy==1.18.1
 pntl==0.2.4
